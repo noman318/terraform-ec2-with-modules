@@ -8,28 +8,16 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-south-1"
+  region = var.aws_region
 }
 
-# Latest Amazon Linux 2023 AMI
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
+module "ec2_instance" {
+  source = "./modules/ec2_instance"
 
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
-}
-
-resource "aws_instance" "web" {
-  ami                         = coalesce(var.ami_id, data.aws_ami.amazon_linux.id)
-  instance_type               = var.instance_type
-  key_name                    = var.key_name
-  subnet_id                   = var.subnet_id
-  associate_public_ip_address = true
-
-  tags = {
-    Name = "terraform-ec2"
-  }
+  name          = var.instance_name
+  instance_type = var.instance_type
+  ami_id        = var.ami_id
+  key_name      = var.key_name
+  subnet_id     = var.subnet_id
+  tags          = var.tags
 }
